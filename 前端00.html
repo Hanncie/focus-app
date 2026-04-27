@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>心流印记 - 专注记录仪</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Text', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at 20% 30%, #1a1a2e, #0a0a15);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px 16px 40px;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            border: 0.5px solid rgba(255,255,255,0.2);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFF5E0, #FFB347, #FF6B6B);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .sub {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 8px;
+        }
+
+        /* 实时预览区 */
+        .live-card {
+            background: rgba(20,20,40,0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 0.5px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .live-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 16px;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.3);
+            border-radius: 24px;
+            padding: 16px;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 8px 20px rgba(0,0,0,0.3));
+        }
+
+        /* 最终成品预览区 */
+        .result-card {
+            background: linear-gradient(135deg, rgba(20,20,40,0.7), rgba(30,25,45,0.7));
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .result-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .result-label span:first-child {
+            color: #FFD700;
+            font-weight: 500;
+        }
+
+        .result-label span:last-child {
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+        }
+
+        .stats-card {
+            background: rgba(20,20,40,0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            border: 0.5px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 10px 0;
+            border-bottom: 0.5px solid rgba(255,255,255,0.08);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .heart-value {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .recording-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 13px;
+        }
+
+        .dot-red {
+            width: 10px;
+            height: 10px;
+            background: #ff3b30;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #ff3b30;
+            animation: blink 1s infinite;
+        }
+
+        .dot-green {
+            width: 10px;
+            height: 10px;
+            background: #34c759;
+            border-radius: 50%;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 0;
+            border: none;
+            border-radius: 44px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            box-shadow: 0 4px 20px rgba(76,175,80,0.3);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b, #c0392b);
+            color: white;
+        }
+
+        .btn-danger:active {
+            transform: scale(0.96);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border: 0.5px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #1a1a2e;
+            font-weight: 700;
+        }
+
+        .timeline-card {
+            background: rgba(20,20,40,0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 0.5px solid rgba(255,255,255,0.1);
+        }
+
+        .timeline-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .range-sliders {
+            margin: 20px 0;
+        }
+
+        .slider-item {
+            margin-bottom: 20px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            border: 2px solid #FFD700;
+        }
+
+        .history-card {
+            background: rgba(20,20,40,0.5);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 20px;
+            border: 0.5px solid rgba(255,255,255,0.1);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 16px;
+        }
+
+        .history-header h3 {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .clear-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .history-list {
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 0.5px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .history-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ff6b6b, #4CAF50, #2196F3);
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-date {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .history-duration {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+
+        .history-view {
+            background: none;
+            border: none;
+            color: #FFD700;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px;
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(20px);
+            color: white;
+            text-align: center;
+            padding: 14px;
+            border-radius: 60px;
+            font-size: 14px;
+            z-index: 1100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .color-strip {
+            display: flex;
+            height: 40px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .color-segment {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge">✨ 仪式感专注工具</div>
+            <h1>心流印记</h1>
+            <div class="sub">专注结束 · 收获独一无二的色彩实体</div>
+        </div>
+
+        <!-- 实时预览区 -->
+        <div class="live-card">
+            <div class="live-label">
+                <span>🎨 实时专注色彩</span>
+                <span id="colorPreviewBadge" style="background:rgba(255,255,255,0.1); padding:4px 10px; border-radius:20px;">#6C8EBF</span>
+            </div>
+            <div class="canvas-wrapper">
+                <canvas id="liveCanvas" width="280" height="280" style="width:100%; max-width:280px; aspect-ratio:1/1"></canvas>
+            </div>
+        </div>
+
+        <!-- 最终成品预览区 -->
+        <div class="result-card" id="resultCard" style="display: none;">
+            <div class="result-label">
+                <span>✨ 你的专属印记 · 静态渐变实体</span>
+                <span>从上到下：开始→结束</span>
+            </div>
+            <div class="canvas-wrapper">
+                <canvas id="resultCanvas" width="280" height="280" style="width:100%; max-width:280px; aspect-ratio:1/1"></canvas>
+            </div>
+            <div style="margin-top: 12px; text-align: center;">
+                <div class="color-strip" id="colorStrip"></div>
+                <p style="font-size: 11px; color: rgba(255,255,255,0.4);">↑ 开始颜色 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 结束颜色 ↓</p>
+            </div>
+        </div>
+
+        <div class="stats-card">
+            <div class="stat-row">
+                <span class="stat-label">📊 状态</span>
+                <div class="recording-indicator" id="recordingStatus">
+                    <span class="dot-green"></span>
+                    <span>待机中</span>
+                </div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">💓 专注指数</span>
+                <div class="heart-value">
+                    <span>❤️</span>
+                    <span class="stat-value" id="heartRateValue">--</span>
+                    <span style="font-size:14px;">BPM</span>
+                </div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">⏱️ 专注时长</span>
+                <span class="stat-value" id="recordDuration">0 秒</span>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" id="startBtn">▶ 开始专注</button>
+            <button class="btn btn-danger" id="stopBtn" disabled>⏹️ 结束专注</button>
+        </div>
+
+        <div class="timeline-card hidden" id="timelineSection">
+            <div class="timeline-title">🎯 选择你想保留的时段</div>
+            <div class="range-sliders">
+                <div class="slider-item">
+                    <div class="slider-label">
+                        <span>⏪ 起始时刻</span>
+                        <span id="startTimeLabel">0 秒</span>
+                    </div>
+                    <input type="range" id="startSlider" min="0" max="100" value="0" step="1">
+                </div>
+                <div class="slider-item">
+                    <div class="slider-label">
+                        <span>⏩ 结束时刻</span>
+                        <span id="endTimeLabel">0 秒</span>
+                    </div>
+                    <input type="range" id="endSlider" min="0" max="100" value="100" step="1">
+                </div>
+            </div>
+            <div class="btn-group" style="margin-bottom:0">
+                <button class="btn btn-secondary" id="previewBtn">👁️ 预览实体效果</button>
+                <button class="btn btn-gold" id="saveSegmentBtn">💎 保存为印记</button>
+            </div>
+        </div>
+
+        <div class="history-card">
+            <div class="history-header">
+                <h3>📦 我的印记收藏</h3>
+                <button class="clear-btn" id="clearHistoryBtn">清空</button>
+            </div>
+            <div id="historyList" class="history-list">
+                <div class="empty-state">还没有印记，开始一次专注吧 ✨</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ========== 丰富好看的渐变色配置 ==========
+        // 15种精心挑选的渐变色，覆盖完整色谱
+        const COLOR_PALETTE = [
+            { name: "樱花粉", r: 255, g: 182, b: 193 },      // #FFB6C1
+            { name: "珊瑚橙", r: 255, g: 127, b: 80 },       // #FF7F50
+            { name: "日落橙", r: 255, g: 99, b: 71 },        // #FF6347
+            { name: "火焰红", r: 255, g: 69, b: 0 },         // #FF4500
+            { name: "金盏黄", r: 255, g: 215, b: 0 },        // #FFD700
+            { name: "柠檬黄", r: 255, g: 255, b: 102 },       // #FFFF66
+            { name: "草绿色", r: 154, g: 205, b: 50 },        // #9ACD32
+            { name: "翡翠绿", r: 80, g: 200, b: 120 },        // #50C878
+            { name: "薄荷绿", r: 60, g: 179, b: 113 },        // #3CB371
+            { name: "海洋蓝", r: 70, g: 130, b: 200 },        // #4682C8
+            { name: "天湖蓝", r: 100, g: 149, b: 237 },       // #6495ED
+            { name: "梦幻紫", r: 147, g: 112, b: 219 },       // #9370DB
+            { name: "薰衣草", r: 180, g: 136, b: 255 },       // #B488FF
+            { name: "莓果紫", r: 218, g: 112, b: 214 },       // #DA70D6
+            { name: "玫瑰红", r: 255, g: 105, b: 180 }        // #FF69B4
+        ];
+
+        // 根据bpm获取颜色（0-100映射到15种颜色）
+        function getColorFromBPM(bpm) {
+            // bpm范围 60-100，映射到0-14的索引
+            let t = (bpm - 60) / 40;
+            t = Math.max(0, Math.min(1, t));
+            let index = Math.floor(t * (COLOR_PALETTE.length - 1));
+            return { ...COLOR_PALETTE[index] };
+        }
+
+        // ========== 渐变圆柱体渲染器（静态多色渐变） ==========
+        class GradientCylinderRenderer {
+            constructor(canvasId, size = 280) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.size = size;
+                this.canvas.width = size;
+                this.canvas.height = size;
+                this.colors = []; // 从上到下的颜色数组
+            }
+
+            // 设置颜色序列（从上到下）
+            setColors(colorArray) {
+                this.colors = colorArray;
+                this.draw();
+            }
+
+            draw() {
+                const ctx = this.ctx;
+                const w = this.size;
+                const h = this.size;
+                const centerX = w / 2;
+                const centerY = h / 2;
+                const cylW = w * 0.55;
+                const cylH = h * 0.45;
+                const topY = centerY - cylH/2;
+                const bottomY = centerY + cylH/2;
+
+                ctx.clearRect(0, 0, w, h);
+
+                // 阴影
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                ctx.shadowBlur = 20;
+                ctx.shadowOffsetX = 4;
+                ctx.shadowOffsetY = 4;
+
+                // 如果没有颜色，显示默认
+                if (this.colors.length === 0) {
+                    ctx.fillStyle = '#6C8EBF';
+                    ctx.beginPath();
+                    ctx.ellipse(centerX, bottomY, cylW/2, cylH/7, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillRect(centerX - cylW/2, topY, cylW, cylH);
+                    ctx.beginPath();
+                    ctx.ellipse(centerX, topY, cylW/2, cylH/7, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.shadowColor = 'transparent';
+                    return;
+                }
+
+                // 创建垂直渐变（从上到下）
+                const gradient = ctx.createLinearGradient(centerX, topY, centerX, bottomY);
+                
+                // 将颜色数组映射到渐变位置
+                for (let i = 0; i < this.colors.length; i++) {
+                    const pos = i / (this.colors.length - 1);
+                    const c = this.colors[i];
+                    gradient.addColorStop(pos, `rgb(${c.r}, ${c.g}, ${c.b})`);
+                }
+
+                // 圆柱体侧面渐变（增加立体感）
+                const sideGradient = ctx.createLinearGradient(centerX - cylW/2, 0, centerX + cylW/2, 0);
+                sideGradient.addColorStop(0, 'rgba(0,0,0,0.3)');
+                sideGradient.addColorStop(0.2, 'rgba(255,255,255,0.15)');
+                sideGradient.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+                sideGradient.addColorStop(0.8, 'rgba(255,255,255,0.1)');
+                sideGradient.addColorStop(1, 'rgba(0,0,0,0.25)');
+
+                // 绘制圆柱体主体（使用垂直渐变）
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.ellipse(centerX, bottomY, cylW/2, cylH/7, 0, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillRect(centerX - cylW/2, topY, cylW, cylH);
+                ctx.beginPath();
+                ctx.ellipse(centerX, topY, cylW/2, cylH/7, 0, 0, Math.PI*2);
+                ctx.fill();
+
+                // 叠加立体感
+                ctx.globalCompositeOperation = 'overlay';
+                ctx.fillStyle = sideGradient;
+                ctx.fillRect(centerX - cylW/2, topY, cylW, cylH);
+                ctx.globalCompositeOperation = 'source-over';
+
+                // 顶部高光
+                ctx.fillStyle = `rgba(255,255,255,0.2)`;
+                ctx.beginPath();
+                ctx.ellipse(centerX, topY, cylW/2.4, cylH/9, 0, 0, Math.PI*2);
+                ctx.fill();
+
+                // 边缘光泽
+                ctx.fillStyle = `rgba(255,255,255,0.08)`;
+                ctx.beginPath();
+                ctx.rect(centerX - cylW/3.5, topY + 6, cylW/7, cylH - 12);
+                ctx.fill();
+
+                ctx.shadowColor = 'transparent';
+            }
+        }
+
+        // ========== 单色渲染器（实时预览用） ==========
+        class SolidCylinderRenderer {
+            constructor(canvasId, size = 280) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.size = size;
+                this.canvas.width = size;
+                this.canvas.height = size;
+                this.currentColor = { r: 108, g: 142, b: 191 };
+                this.draw();
+            }
+            
+            setColor(rgb) {
+                this.currentColor = rgb;
+                this.draw();
+            }
+            
+            draw() {
+                const ctx = this.ctx;
+                const w = this.size;
+                const h = this.size;
+                const centerX = w / 2;
+                const centerY = h / 2;
+                const cylW = w * 0.55;
+                const cylH = h * 0.45;
+                const topY = centerY - cylH/2;
+                const bottomY = centerY + cylH/2;
+                
+                ctx.clearRect(0, 0, w, h);
+                
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                ctx.shadowBlur = 20;
+                ctx.shadowOffsetX = 4;
+                ctx.shadowOffsetY = 4;
+                
+                const baseColor = `rgb(${this.currentColor.r}, ${this.currentColor.g}, ${this.currentColor.b})`;
+                const darkColor = `rgb(${Math.max(0, this.currentColor.r-50)}, ${Math.max(0, this.currentColor.g-50)}, ${Math.max(0, this.currentColor.b-50)})`;
+                
+                const grad = ctx.createLinearGradient(centerX - cylW/2, 0, centerX + cylW/2, 0);
+                grad.addColorStop(0, darkColor);
+                grad.addColorStop(0.25, baseColor);
+                grad.addColorStop(0.7, baseColor);
+                grad.addColorStop(1, darkColor);
+                
+                ctx.fillStyle = grad;
+                
+                ctx.beginPath();
+                ctx.ellipse(centerX, bottomY, cylW/2, cylH/7, 0, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillRect(centerX - cylW/2, topY, cylW, cylH);
+                ctx.beginPath();
+                ctx.ellipse(centerX, topY, cylW/2, cylH/7, 0, 0, Math.PI*2);
+                ctx.fill();
+                
+                ctx.fillStyle = `rgba(255,255,255,0.25)`;
+                ctx.beginPath();
+                ctx.ellipse(centerX, topY, cylW/2.4, cylH/9, 0, 0, Math.PI*2);
+                ctx.fill();
+                
+                ctx.fillStyle = `rgba(255,255,255,0.12)`;
+                ctx.beginPath();
+                ctx.rect(centerX - cylW/3.5, topY + 6, cylW/7, cylH - 12);
+                ctx.fill();
+                
+                ctx.shadowColor = 'transparent';
+            }
+        }
+
+        // ========== 专注指数模拟器 ==========
+        class FocusSimulator {
+            constructor() {
+                this.currentBPM = 72;
+                this.trend = 0;
+            }
+            
+            next() {
+                let change = (Math.random() - 0.5) * 5;
+                this.trend = this.trend * 0.9 + change * 0.1;
+                let newBPM = this.currentBPM + this.trend + (Math.random() - 0.5) * 2;
+                newBPM = Math.max(60, Math.min(100, newBPM));
+                this.currentBPM = Math.round(newBPM);
+                return this.currentBPM;
+            }
+            
+            getColor(bpm) {
+                return getColorFromBPM(bpm);
+            }
+        }
+
+        // ========== 记录会话 ==========
+        class RecordingSession {
+            constructor() {
+                this.isRecording = false;
+                this.dataPoints = [];
+                this.startTime = null;
+            }
+            
+            start() {
+                this.isRecording = true;
+                this.dataPoints = [];
+                this.startTime = Date.now();
+            }
+            
+            addPoint(bpm, color) {
+                if (!this.isRecording) return;
+                this.dataPoints.push({
+                    timestamp: Date.now() - this.startTime,
+                    bpm: bpm,
+                    color: {...color}
+                });
+            }
+            
+            stop() {
+                this.isRecording = false;
+                return this.dataPoints;
+            }
+            
+            getDuration() {
+                if (!this.startTime) return 0;
+                if (this.isRecording) return Math.floor((Date.now() - this.startTime) / 1000);
+                if (this.dataPoints.length > 0) return Math.floor(this.dataPoints[this.dataPoints.length-1].timestamp / 1000);
+                return 0;
+            }
+            
+            getSegment(startPercent, endPercent) {
+                if (this.dataPoints.length === 0) return [];
+                let startIdx = Math.floor(startPercent * (this.dataPoints.length - 1));
+                let endIdx = Math.floor(endPercent * (this.dataPoints.length - 1));
+                startIdx = Math.max(0, Math.min(this.dataPoints.length-1, startIdx));
+                endIdx = Math.max(startIdx, Math.min(this.dataPoints.length-1, endIdx));
+                return this.dataPoints.slice(startIdx, endIdx + 1);
+            }
+            
+            getSegmentColors(startPercent, endPercent) {
+                const segment = this.getSegment(startPercent, endPercent);
+                return segment.map(p => p.color);
+            }
+        }
+
+        // ========== 主应用 ==========
+        class FocusApp {
+            constructor() {
+                this.liveRenderer = new SolidCylinderRenderer('liveCanvas', 280);
+                this.resultRenderer = new GradientCylinderRenderer('resultCanvas', 280);
+                this.simulator = new FocusSimulator();
+                this.session = new RecordingSession();
+                this.savedItems = [];
+                this.recordInterval = null;
+                
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.loadFromStorage();
+                this.liveRenderer.setColor({ r: 108, g: 142, b: 191 });
+                this.updateColorBadge({ r: 108, g: 142, b: 191 });
+            }
+            
+            bindEvents() {
+                document.getElementById('startBtn').onclick = () => this.start();
+                document.getElementById('stopBtn').onclick = () => this.stop();
+                document.getElementById('previewBtn').onclick = () => this.showPreview();
+                document.getElementById('saveSegmentBtn').onclick = () => this.saveSegment();
+                document.getElementById('clearHistoryBtn').onclick = () => this.clearHistory();
+                
+                const startSlider = document.getElementById('startSlider');
+                const endSlider = document.getElementById('endSlider');
+                
+                startSlider.oninput = () => {
+                    let startVal = parseInt(startSlider.value);
+                    let endVal = parseInt(endSlider.value);
+                    if (startVal > endVal) {
+                        startSlider.value = endVal;
+                        startVal = endVal;
+                    }
+                    this.updateTimeLabels(startSlider.value, endSlider.value);
+                };
+                
+                endSlider.oninput = () => {
+                    let startVal = parseInt(startSlider.value);
+                    let endVal = parseInt(endSlider.value);
+                    if (endVal < startVal) {
+                        endSlider.value = startVal;
+                        endVal = startVal;
+                    }
+                    this.updateTimeLabels(startSlider.value, endSlider.value);
+                };
+            }
+            
+            start() {
+                if (this.session.isRecording) return;
+                this.session.start();
+                this.startRecordingLoop();
+                
+                // 隐藏结果预览
+                document.getElementById('resultCard').style.display = 'none';
+                
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                this.updateRecordingUI(true);
+                this.showToast('✨ 专注开始 · 结束后你会得到渐变色彩实体');
+            }
+            
+            startRecordingLoop() {
+                if (this.recordInterval) clearInterval(this.recordInterval);
+                this.recordInterval = setInterval(() => {
+                    if (this.session.isRecording) {
+                        const bpm = this.simulator.next();
+                        const color = this.simulator.getColor(bpm);
+                        this.session.addPoint(bpm, color);
+                        this.liveRenderer.setColor(color);
+                        this.updateColorBadge(color);
+                        this.updateStats(bpm);
+                    }
+                }, 400);
+            }
+            
+            stop() {
+                if (!this.session.isRecording) return;
+                clearInterval(this.recordInterval);
+                this.recordInterval = null;
+                this.session.stop();
+                
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                this.updateRecordingUI(false);
+                
+                const duration = this.session.getDuration();
+                if (duration < 2) {
+                    this.showToast('专注时间太短，请至少专注3秒以上');
+                    return;
+                }
+                
+                const timelineSection = document.getElementById('timelineSection');
+                timelineSection.classList.remove('hidden');
+                
+                const maxPercent = 100;
+                document.getElementById('startSlider').max = maxPercent;
+                document.getElementById('endSlider').max = maxPercent;
+                document.getElementById('startSlider').value = 0;
+                document.getElementById('endSlider').value = maxPercent;
+                this.updateTimeLabels(0, maxPercent);
+                
+                this.showToast('📊 记录完成！拖动滑块选择你想保留的时段');
+            }
+            
+            updateStats(bpm) {
+                document.getElementById('heartRateValue').innerHTML = bpm;
+                document.getElementById('recordDuration').innerHTML = this.session.getDuration() + ' 秒';
+            }
+            
+            updateColorBadge(color) {
+                const hex = `#${((1 << 24) + (color.r << 16) + (color.g << 8) + color.b).toString(16).slice(1)}`;
+                document.getElementById('colorPreviewBadge').innerHTML = hex;
+                document.getElementById('colorPreviewBadge').style.background = `rgba(${color.r}, ${color.g}, ${color.b}, 0.3)`;
+            }
+            
+            updateRecordingUI(isRecording) {
+                const statusDiv = document.getElementById('recordingStatus');
+                if (isRecording) {
+                    statusDiv.innerHTML = '<span class="dot-red"></span><span>专注记录中...</span>';
+                } else {
+                    statusDiv.innerHTML = '<span class="dot-green"></span><span>待机中</span>';
+                }
+            }
+            
+            updateTimeLabels(startPercent, endPercent) {
+                const duration = this.session.getDuration();
+                const startSec = Math.floor(duration * (startPercent / 100));
+                const endSec = Math.floor(duration * (endPercent / 100));
+                document.getElementById('startTimeLabel').innerHTML = startSec + ' 秒';
+                document.getElementById('endTimeLabel').innerHTML = endSec + ' 秒';
+            }
+            
+            showPreview() {
+                const startVal = parseInt(document.getElementById('startSlider').value) / 100;
+                const endVal = parseInt(document.getElementById('endSlider').value) / 100;
+                const colors = this.session.getSegmentColors(startVal, endVal);
+                
+                if (colors.length === 0) {
+                    this.showToast('没有可预览的数据');
+                    return;
+                }
+                
+                // 显示最终成品预览区
+                const resultCard = document.getElementById('resultCard');
+                resultCard.style.display = 'block';
+                
+                // 渲染渐变圆柱体
+                this.resultRenderer.setColors(colors);
+                
+                // 渲染色条
+                this.renderColorStrip(colors);
+                
+                this.showToast('✨ 这是你的渐变实体效果！');
+            }
+            
+            renderColorStrip(colors) {
+                const strip = document.getElementById('colorStrip');
+                strip.innerHTML = '';
+                
+                // 最多显示20个色块
+                const step = Math.max(1, Math.floor(colors.length / 20));
+                
+                for (let i = 0; i < colors.length; i += step) {
+                    const color = colors[i];
+                    const div = document.createElement('div');
+                    div.className = 'color-segment';
+                    div.style.backgroundColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
+                    strip.appendChild(div);
+                }
+            }
+            
+            saveSegment() {
+                const startVal = parseInt(document.getElementById('startSlider').value) / 100;
+                const endVal = parseInt(document.getElementById('endSlider').value) / 100;
+                const colors = this.session.getSegmentColors(startVal, endVal);
+                
+                if (colors.length === 0) {
+                    this.showToast('没有数据可保存');
+                    return;
+                }
+                
+                const duration = this.session.getDuration();
+                const startSec = Math.floor(duration * startVal);
+                const endSec = Math.floor(duration * endVal);
+                
+                const now = new Date();
+                const item = {
+                    id: Date.now(),
+                    dateStr: `${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`,
+                    durationSec: endSec - startSec,
+                    totalDuration: duration,
+                    colors: colors,  // 保存完整的颜色序列用于渐变
+                    startColor: colors[0],
+                    endColor: colors[colors.length - 1],
+                    timestamp: now.getTime()
+                };
+                
+                this.savedItems.unshift(item);
+                this.saveToStorage();
+                this.renderHistory();
+                this.showToast('💎 印记已保存！可以在下方查看');
+            }
+            
+            renderHistory() {
+                const container = document.getElementById('historyList');
+                if (this.savedItems.length === 0) {
+                    container.innerHTML = '<div class="empty-state">还没有印记，开始一次专注吧 ✨</div>';
+                    return;
+                }
+                
+                let html = '';
+                for (let item of this.savedItems) {
+                    const startColor = item.startColor;
+                    const endColor = item.endColor;
+                    html += `
+                        <div class="history-item" onclick="app.viewHistoryItem(${item.id})">
+                            <div class="history-preview" style="background: linear-gradient(180deg, rgb(${startColor.r},${startColor.g},${startColor.b}), rgb(${endColor.r},${endColor.g},${endColor.b}));"></div>
+                            <div class="history-info">
+                                <div class="history-date">${item.dateStr}</div>
+                                <div class="history-duration">专注片段 ${item.durationSec}秒 · ${item.colors.length}种色彩渐变</div>
+                            </div>
+                            <div class="history-view">👁️ 查看</div>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+            }
+            
+            viewHistoryItem(id) {
+                const item = this.savedItems.find(i => i.id === id);
+                if (item && item.colors) {
+                    this.resultRenderer.setColors(item.colors);
+                    this.renderColorStrip(item.colors);
+                    document.getElementById('resultCard').style.display = 'block';
+                    this.showToast(`✨ ${item.dateStr} 的渐变印记`);
+                    
+                    // 滚动到结果预览区
+                    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            clearHistory() {
+                if (confirm('确定要清空所有印记吗？')) {
+                    this.savedItems = [];
+                    this.saveToStorage();
+                    this.renderHistory();
+                    this.showToast('已清空');
+                }
+            }
+            
+            saveToStorage() {
+                localStorage.setItem('focus_imprints_v4', JSON.stringify(this.savedItems));
+            }
+            
+            loadFromStorage() {
+                const stored = localStorage.getItem('focus_imprints_v4');
+                if (stored) {
+                    try {
+                        this.savedItems = JSON.parse(stored);
+                        this.renderHistory();
+                    } catch(e) {}
+                }
+            }
+            
+            showToast(msg) {
+                const toast = document.getElementById('toast');
+                toast.innerText = msg;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            }
+        }
+        
+        let app;
+        window.onload = () => {
+            app = new FocusApp();
+            window.app = app;
+        };
+    </script>
+</body>
+</html>
